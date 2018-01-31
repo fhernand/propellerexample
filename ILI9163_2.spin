@@ -140,17 +140,17 @@ VAR
   long  left, right, top, bottom                        ' current screen window
   long  fontpixels                                      ' 8x8 font pixels (2 longs)
 
-' mailbox for PASM cog                                  '\
-  long  mailbox                                         '| command(8b), spare(8b), param(16/8b)
+' mailboxB for PASM cog                                  '\
+  long  mailboxB                                         '| command(8b), spare(8b), param(16/8b)
   long  mailbox1                                        '| params(32b)
   long  mailbox2                                        '| 
   long  mailbox3                                        '/ fgcolor<<16 | bgcolor
 
   long  cog                                             ' pasm cog+1
-  long stack_space[32]
+  long stack_space2[32]
 
 PUB start
-  cognew(cogic, @stack_space)
+  cognew(cogic, @stack_space2)
 
 PRI cogic
 
@@ -570,30 +570,30 @@ Row & Cols default correctly 128*128
 
 
 ''+-----------------------------------------------------+
-''| Low Level Drivers - call fast PASM via mailbox(es)  |
+''| Low Level Drivers - call fast PASM via mailboxB(es)  |
 ''+-----------------------------------------------------+
 
 PRI lcdSetup
   'start pasm cog and wait till running
-  mailbox := $0FFF                                      ' non-zero
-  cog := cognew(@entry, @mailbox) +1                    ' start LCD Driver Cog
-  repeat while mailbox <> 0                             ' wait until cog running
+  mailboxB := $0FFF                                      ' non-zero
+  cog := cognew(@entry, @mailboxB) +1                    ' start LCD Driver Cog
+  repeat while mailboxB <> 0                             ' wait until cog running
 
 PRI lcdReset
-  mailbox := $FF_00_0000                                ' hw reset LCD
-  repeat while mailbox <> 0
+  mailboxB := $FF_00_0000                                ' hw reset LCD
+  repeat while mailboxB <> 0
   
 PRI lcdWriteData16(val)
   lcdWriteData(val >> 8)
   lcdWriteData(val & $FF)
 
 PRI lcdWriteData(val)
-  mailbox := $100 | val                                 ' dc=data=1
-  repeat while mailbox <> 0
+  mailboxB := $100 | val                                 ' dc=data=1
+  repeat while mailboxB <> 0
 
 PRI lcdWriteCmd(val)
-  mailbox := val                                        ' dc=cmd=0
-  repeat while mailbox <> 0
+  mailboxB := val                                        ' dc=cmd=0
+  repeat while mailboxB <> 0
 
 PRI setWindow(xs, ys, xe, ye)
   left   := xs
@@ -601,23 +601,23 @@ PRI setWindow(xs, ys, xe, ye)
   right  := xe
   bottom := ye
   mailbox1 := (xs<<24) | (ys<<16) | (xe<<8) | ye        ' xs, ys, xe, ye 
-  mailbox := $81_00_0000
-  repeat while mailbox <> 0
+  mailboxB := $81_00_0000
+  repeat while mailboxB <> 0
 
 PRI fillWindow(rgb) | n
 ' Fill Window/Rectangle - calc pixels & write
   n := (right - left +1)*(bottom - top +1)              ' calc no. of pixels
   mailbox1 := (rgb << 16) | n
-  mailbox := $82_00_0000
-  repeat while mailbox <> 0
+  mailboxB := $82_00_0000
+  repeat while mailboxB <> 0
 
 PRI drawChar(char) 
 ' Draw a Char (8*8 font)
   setWindow(col, row, col+7, row+7)                     ' set 8*8 font pixel window
 
   mailbox3 := (fgcolor << 16) | bgcolor
-  mailbox  := $83_00_0000 | (char & $7F)
-  repeat while mailbox <> 0
+  mailboxB  := $83_00_0000 | (char & $7F)
+  repeat while mailboxB <> 0
 
   col += 8
   if col => width
@@ -645,7 +645,7 @@ setup           mov     outa, outmask                   ' preset levels
                 call    #wait50
                 call    #wait50
 
-done            wrlong  zero, hubptr                    ' clear hub mailbox
+done            wrlong  zero, hubptr                    ' clear hub mailboxB
 wait            rdlong  data, hubptr      wz            ' wait for something to do
         if_z    jmp     #wait
 

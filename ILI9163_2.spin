@@ -309,7 +309,7 @@ PRI lcdInit
 PRI lcdSetup
   'start pasm cog and wait till running
   mailboxB := $0FFF                                      ' non-zero
-  cog := cognew(@entry, @mailboxB) ' +1                    ' start LCD Driver Cog
+  cog := cognew(@entry, @mailboxB) +1                    ' start LCD Driver Cog
   repeat while mailboxB <> 0                             ' wait until cog running
 
 PRI lcdReset

@@ -51,12 +51,12 @@ CON
 ' LCD Connector J2
   PIN_3V3       = 0 '   '0         ' 3v3 pwr supplied by prop pin
   PIN_GND       = 1 '   '1         ' GND pwr supplied by prop pin
-  PIN_CE        = 18 '0  '2         ' Serial clock enable pin
-  PIN_RST       = 15 '1  '3         ' Reset pin
-  PIN_DC        = 16 '2  '4         ' Data / Command selection pin
-  PIN_SDA       = 20 '3  '5         ' Serial Data pin
-  PIN_CLK       = 17 '4  '6         ' Serial Clock pin
-  PIN_LED       = 19 '5  '7         ' LED backlight enable pin
+  PIN_CE        = 11 '0  '2         ' Serial clock enable pin
+  PIN_RST       = 12 '1  '3         ' Reset pin
+  PIN_DC        = 13 '2  '4         ' Data / Command selection pin
+  PIN_SDA       = 10 '3  '5         ' Serial Data pin
+  PIN_CLK       = 9 '4  '6         ' Serial Clock pin
+  PIN_LED       = 14 '5  '7         ' LED backlight enable pin
 
 ' ILI9163C registers...
   LCD_NOP               = $00

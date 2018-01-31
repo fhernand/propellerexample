@@ -19,7 +19,7 @@
 '' RR20150219  050  power LCD from prop pins (~2.0mA) [DID NOT WORK - must want 5V not 3V3 else change params!!!]
 '' RR20161011  051  P8XBlade2 (power from prop pins - v050 didn't enable PWR/GND DIRA pins) 
 '' RR20161011  052  create lcdSetup routine in low level routines (ready for pasm)
-''             053  some fast pasm routines wkg in separate cog (delays added for viewing)
+''             053  some fast pasm routines wkg in separate cogB (delays added for viewing)
 ''             054  code tidy
 '' RR20161015  055  Release
 
@@ -140,13 +140,13 @@ VAR
   long  left, right, top, bottom                        ' current screen window
   long  fontpixels                                      ' 8x8 font pixels (2 longs)
 
-' mailboxB for PASM cog                                  '\
+' mailboxB for PASM cogB                                  '\
   long  mailboxB                                         '| command(8b), spare(8b), param(16/8b)
-  long  mailbox1                                        '| params(32b)
-  long  mailbox2                                        '| 
-  long  mailbox3                                        '/ fgcolor<<16 | bgcolor
+  long  mailbox1B                                        '| params(32b)
+  long  mailbox2B                                        '| 
+  long  mailbox3B                                        '/ fgcolor<<16 | bgcolor
 
-  long  cog                                             ' pasm cog+1
+  long  cogB                                             ' pasm cogB+1
   long stack_space2[32]
 
 PUB start
@@ -574,10 +574,10 @@ Row & Cols default correctly 128*128
 ''+-----------------------------------------------------+
 
 PRI lcdSetup
-  'start pasm cog and wait till running
+  'start pasm cogB and wait till running
   mailboxB := $0FFF                                      ' non-zero
-  cog := cognew(@entry, @mailboxB) +1                    ' start LCD Driver Cog
-  repeat while mailboxB <> 0                             ' wait until cog running
+  cogB := cognew(@entry, @mailboxB) +1                    ' start LCD Driver cogB
+  repeat while mailboxB <> 0                             ' wait until cogB running
 
 PRI lcdReset
   mailboxB := $FF_00_0000                                ' hw reset LCD
@@ -600,14 +600,14 @@ PRI setWindow(xs, ys, xe, ye)
   top    := ys
   right  := xe
   bottom := ye
-  mailbox1 := (xs<<24) | (ys<<16) | (xe<<8) | ye        ' xs, ys, xe, ye 
+  mailbox1B := (xs<<24) | (ys<<16) | (xe<<8) | ye        ' xs, ys, xe, ye 
   mailboxB := $81_00_0000
   repeat while mailboxB <> 0
 
 PRI fillWindow(rgb) | n
 ' Fill Window/Rectangle - calc pixels & write
   n := (right - left +1)*(bottom - top +1)              ' calc no. of pixels
-  mailbox1 := (rgb << 16) | n
+  mailbox1B := (rgb << 16) | n
   mailboxB := $82_00_0000
   repeat while mailboxB <> 0
 
@@ -615,7 +615,7 @@ PRI drawChar(char)
 ' Draw a Char (8*8 font)
   setWindow(col, row, col+7, row+7)                     ' set 8*8 font pixel window
 
-  mailbox3 := (fgcolor << 16) | bgcolor
+  mailbox3B := (fgcolor << 16) | bgcolor
   mailboxB  := $83_00_0000 | (char & $7F)
   repeat while mailboxB <> 0
 
@@ -711,7 +711,7 @@ fill            mov     data, #LCD_RAM_WRITE
                 jmp     #done
 
 ''+-----------------------------------------------------+
-''| LCD PaintChar(char)   mailbox3=fgcolor/bgcolor      |
+''| LCD PaintChar(char)   mailbox3B=fgcolor/bgcolor      |
 ''+-----------------------------------------------------+
 paintchar       rdlong  fg, hubptr3                     ' get fgcolor/bgcolor
                 mov     bg, fg

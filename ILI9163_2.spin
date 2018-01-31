@@ -104,6 +104,34 @@ CON
   yoffset= 0                    '\  black pcb = 0 (screen y offset)
 ' yoffset= 32                   '/  red   pcb = 32
 
+'                 ' sin(x) * 1024    ' degrees
+Z00     =    0    ' 0.0000 * 1024    '  0 
+Z01     =  107    ' 0.1045 * 1024    '  6
+Z02     =  213    ' 0.2079 * 1024    ' 12
+Z03     =  316    ' 0.3090 * 1024    ' 18
+Z04     =  416    ' 0.4067 * 1024    ' 24
+Z05     =  512    ' 0.5000 * 1024    ' 30
+Z06     =  602    ' 0.5878 * 1024    ' 36
+Z07     =  685    ' 0.6691 * 1024    ' 42
+Z08     =  761    ' 0.7431 * 1024    ' 48
+Z09     =  828    ' 0.8090 * 1024    ' 54
+Z10     =  887    ' 0.8660 * 1024    ' 60
+Z11     =  935    ' 0.9135 * 1024    ' 66
+Z12     =  974    ' 0.9511 * 1024    ' 72
+Z13     = 1002    ' 0.9781 * 1024    ' 78
+Z14     = 1018    ' 0.9945 * 1024    ' 84
+Z15     = 1024    ' 1.0000 * 1024    ' 90
+'180    =     ' 0.0000 * 1024    '    180
+'270    =     '-1.0000 * 1024    '    270
+
+' Clock constants
+_CX     = 64                    '\ clock center
+_CY     = 64                    '/
+_CD     = 120                   ' clock  face dia
+_CS     = 45                    ' second hand length
+_CM     = 40                    ' minute hand length
+_CH     = 30                    ' hour   hand length
+
 VAR
 
   long  timeB, hhB, mmB, ssB
@@ -133,8 +161,76 @@ PRI cogic
 
   clearScreen
 
-  main_digitalclock
+  main_roundclock
 
+
+PRI main_roundclock | i, prev, s, j, jprev
+' Round Clock
+
+  clearScreen
+  fgcolor := green
+  bgcolor := black
+ 
+' Draw Clock Face
+  drawCircle(_CX, _CY, _CD/2, green)
+  row := 8
+  col := 56
+  drawChar("1")
+  drawChar("2")
+  row := 16
+  col := 31
+  drawChar("1")
+  drawChar("1")
+  col := 89
+  drawChar("1")
+  row := 36
+  col := 15
+  drawChar("1")
+  drawChar("0")
+  col := 106
+  drawChar("2")
+  row := 60
+  col := 8
+  drawChar("9")
+  col := 112
+  drawChar("3")
+  row := 84
+  col := 15
+  drawChar("8")
+  col := 106
+  drawChar("4")
+  row := 104
+  col := 31
+  drawChar("7")
+  col := 89
+  drawChar("5")
+  row := 112
+  col := 60
+  drawChar("6")
+
+  time := cnt
+  s    := clkfreq               ' 1s
+  time += s                     ' +1s
+
+' Draw Clock Hands
+  hh~
+  repeat while hh < 20
+    drawLine(_CX, _CY, byte[@HH00][hh*2], byte[@HH00][hh*2+1], black)           ' remove prev hour hand
+    hh += 5
+    if hh => 60
+     hh~
+    repeat i from 0 to 59
+      drawLine(_CX, _CY, byte[@MH00][prev*2], byte[@MH00][prev*2+1], black)     ' remove prev minute hand
+      drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)       ' show minute hand
+      drawLine(_CX, _CY, byte[@HH00][hh*2],   byte[@HH00][hh*2+1], red)         ' show hour hand
+      prev := i
+      repeat j from 0 to 59
+        drawLine(_CX, _CY, byte[@SH00][jprev*2],byte[@SH00][jprev*2+1], black)  ' remove prev second hand
+        drawLine(_CX, _CY, byte[@SH00][j*2],    byte[@SH00][j*2+1], white)      ' show second hand
+        drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)     ' show minute hand
+        drawLine(_CX, _CY, byte[@HH00][hh*2],   byte[@HH00][hh*2+1], red)       ' show hour hand
+        jprev := j
+        waitcnt(time += s)
 
 
 PRI main_digitalclock | s

@@ -222,7 +222,7 @@ PRI main_roundclock | i, prev, s, j, jprev
     repeat i from 0 to 59
       drawLine(_CX, _CY, byte[@MH00][prev*2], byte[@MH00][prev*2+1], black)     ' remove prev minute hand
       drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)       ' show minute hand
-      drawLine(_CX, _CY, byte[@HH00][hh*2],   byte[@HH00][hh*2+1], red)         ' show hour hand
+      drawLine(_CX, _CY, byte[@HH00][hhB*2],   byte[@HH00][hhB*2+1], red)         ' show hour hand
       prev := i
       repeat j from 0 to 59
         drawLine(_CX, _CY, byte[@SH00][jprev*2],byte[@SH00][jprev*2+1], black)  ' remove prev second hand

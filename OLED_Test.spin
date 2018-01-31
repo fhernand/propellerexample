@@ -81,7 +81,7 @@ PRI random_stuff|count
     OLED.write16x32Char(count+3,1,6)
     
     OLED.updateDisplay	
-    waitcnt(clkfreq/50+cnt)
+    waitcnt(clkfreq/5000+cnt)
 
     OLED.write4x16String(String("Engine Subsystem"),strsize(String("Engine Subsystem")),0,0)
     OLED.write4x16String(String("All OK"),strsize(String("All OK")),1,0)
@@ -92,5 +92,5 @@ PRI random_stuff|count
     OLED.write16x32Char(count+7,1,6)
     OLED.updateDisplay
     
-    waitcnt(clkfreq/50+cnt)
+    waitcnt(clkfreq/5000+cnt)
 

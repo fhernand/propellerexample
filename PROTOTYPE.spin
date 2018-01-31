@@ -8,6 +8,7 @@ OBJ
   ILI9163_2   :     "ILI9163_2"
   
 PUB main
-  OLED_Test.SPI_DEMO
   ILI9163_2.start 
-  ILI9163_1.start 
+  ILI9163_1.start
+  OLED_Test.SPI_DEMO
+ 

@@ -4,7 +4,7 @@ CON
 
 OBJ
   OLED_Test :     "OLED_Test"      ''OLED dedicated SPI engine in Assembly
-  ILI9163_1   :     "ILI9163_2"
+  ILI9163_1   :     "ILI9163_1"
   ILI9163_2   :     "ILI9163_2"
   
 PUB main

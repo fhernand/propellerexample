@@ -107,7 +107,7 @@ CON
 VAR
 
   long  time, hh, mm, ss
-  long  row, col, fgcolor, bgcolor                      ' for text
+  long  rowB, colB, fgcolor, bgcolor                      ' for text
   long  left, right, top, bottom                        ' current screen window
   long  fontpixels                                      ' 8x8 font pixels (2 longs)
 
@@ -121,8 +121,8 @@ VAR
 
 PUB start 
 
-  col~                                                  ' 0..15
-  row~                                                  ' 0..15
+  colB~                                                  ' 0..15
+  rowB~                                                  ' 0..15
   fgcolor := white
   bgcolor := black 
   
@@ -162,15 +162,15 @@ PRI main_digitalclock | s
         if hh => 24
           hh~
     ' draw time hh:mm:ss          
-    row~
-    col~
+    rowB~
+    colB~
     drawWHChar(3, 6, hh /  10 + "0")
     drawWHChar(3, 6, hh // 10 + "0")
     drawWHChar(3, 6, ":")
     drawWHChar(3, 6, mm /  10 + "0")
     drawWHChar(3, 6, mm // 10 + "0")
-    row := 64
-    col := 64
+    rowB := 64
+    colB := 64
     drawWHChar(2, 4, ":")
     drawWHChar(2, 4, ss /  10 + "0")
     drawWHChar(2, 4, ss // 10 + "0")
@@ -224,35 +224,35 @@ PRI fillRectangle(xs, ys, xe, ye, rgb)
 
 PRI drawWHChar(w, h, char) | c, i, j
 ' Draw Wx width, Hx height, char (multi-width & multi-height 8*8 font)
-  setWindow(col, row, col+(w*8-1), row+(h*8-1))
+  setWindow(colB, rowB, colB+(w*8-1), rowB+(h*8-1))
   lcdWriteCmd(LCD_RAM_WRITE)
   c := char & $7F
 
   repeat j from 0 to 1                                  ' 2 sets of 4 rows of pixels...
     fontpixels := long[@font][c+j*128]                  '   get first/second 4 rows of pixels
-    ' draw 1st row h*
+    ' draw 1st rowB h*
     repeat h
       repeat i from 0 to 7
         drawWPixels(w, fontpixels & (1<<i))
-    ' draw 2nd row h*
+    ' draw 2nd rowB h*
     repeat h
       repeat i from 8 to 15
         drawWPixels(w, fontpixels & (1<<i))
-    ' draw 3rd row h*
+    ' draw 3rd rowB h*
     repeat h
       repeat i from 16 to 23
         drawWPixels(w, fontpixels & (1<<i))
-    ' draw 4th row h*
+    ' draw 4th rowB h*
     repeat h
       repeat i from 24 to 31
         drawWPixels(w, fontpixels & (1<<i))
 
-  col += w*8
-  if col => width
-    col~
-    row += h*8
-    if row => height
-     row~
+  colB += w*8
+  if colB => width
+    colB~
+    rowB += h*8
+    if rowB => height
+     rowB~
 
 PRI drawWPixels(w, bool)
 ' Draw W* pixel(s)
@@ -346,18 +346,18 @@ PRI fillWindow(rgb) | n
 
 PRI drawChar(char) 
 ' Draw a Char (8*8 font)
-  setWindow(col, row, col+7, row+7)                     ' set 8*8 font pixel window
+  setWindow(colB, rowB, colB+7, rowB+7)                     ' set 8*8 font pixel window
 
   mailboxB3 := (fgcolor << 16) | bgcolor
   mailboxB  := $83_00_0000 | (char & $7F)
   repeat while mailboxB <> 0
 
-  col += 8
-  if col => width
-    col~
-    row += 8
-    if row => height
-     row~
+  colB += 8
+  if colB => width
+    colB~
+    rowB += 8
+    if rowB => height
+     rowB~
 
 
 DAT

@@ -210,7 +210,7 @@ PRI main_roundclock | i, prev, s, j, jprev
 
   timeB := cnt
   s    := clkfreq               ' 1s
-  timBe += s                     ' +1s
+  timeB += s                     ' +1s
 
 ' Draw Clock Hands
   hhB~

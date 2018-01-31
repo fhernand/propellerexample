@@ -214,7 +214,7 @@ PRI main_roundclock | i, prev, s, j, jprev
 
 ' Draw Clock Hands
   hhB~
-  repeat while hh < 20
+  repeat while hhb < 20
     drawLine(_CX, _CY, byte[@HH00][hhB*2], byte[@HH00][hhB*2+1], black)           ' remove prev hour hand
     hhB += 5
     if hhB => 60

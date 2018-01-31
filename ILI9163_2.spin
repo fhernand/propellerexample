@@ -9,7 +9,7 @@
 '' RR20150101       Commence
 ''                  Screen is 128*128 offset by 32
 '' RR20150121  023  drawLine, drawCircle, drawPixel, setWindow, fillWindow, fillRectangle, drawChar working
-''             030  clock working (fast, no timeB set, etc)  
+''             030  clock working (fast, no time set, etc)  
 ''             032  digital clock
 ''             033  double height clock
 ''             035  tripple height double width clock
@@ -19,7 +19,7 @@
 '' RR20150219  050  power LCD from prop pins (~2.0mA) [DID NOT WORK - must want 5V not 3V3 else change params!!!]
 '' RR20161011  051  P8XBlade2 (power from prop pins - v050 didn't enable PWR/GND DIRA pins) 
 '' RR20161011  052  create lcdSetup routine in low level routines (ready for pasm)
-''             053  some fast pasm routines wkg in separate cogB (delays added for viewing)
+''             053  some fast pasm routines wkg in separate cog (delays added for viewing)
 ''             054  code tidy
 '' RR20161015  055  Release
 
@@ -45,8 +45,8 @@ CON
 ' _XINFREQ      = 6_500_000         '\ set for 6.50MHz (CpuBlade/RamBlade/RamBlade3/TriBlade#2)
 ' _CLKMODE      = xtal1 + pll16x    '/
 
- ' _XINFREQ      = 12_000_000        '\ set for 12.00MHz (P8XBlade2)
- ' _CLKMODE      = xtal1 + pll8x     '/
+'  _XINFREQ      = 12_000_000        '\ set for 12.00MHz (P8XBlade2)
+'  _CLKMODE      = xtal1 + pll8x     '/
 
 ' LCD Connector J2
   PIN_3V3B       = 0 '   '0         ' 3v3 pwr supplied by prop pin
@@ -86,7 +86,7 @@ CON
   LCD_POS_GAMMA         = $E0
   LCD_NEG_GAMMA         = $E1
   LCD_GAMMA_RS          = $F2
-
+  
 ' LCD_ALL_ON            = $A4
 ' LCD_ALL_OFF           = $A5
 
@@ -99,8 +99,8 @@ CON
   yellow= red+green
   purple= red+blue
 
-  width = 132                   ' screen width  (cols)
-  height= 132                  ' screen height (rows)
+  width = 128                   ' screen width  (cols)
+  height= 128                   ' screen height (rows)
   yoffset= 0                    '\  black pcb = 0 (screen y offset)
 ' yoffset= 32                   '/  red   pcb = 32
 
@@ -132,30 +132,32 @@ _CS     = 45                    ' second hand length
 _CM     = 40                    ' minute hand length
 _CH     = 30                    ' hour   hand length
 
+
 VAR
 
-  long  timeB, hhB, mmB, ssB
-  long  rowB, colB, fgcolorB, bgcolorB                      ' for text
-  long  leftB, rightB, topB, bottomB                        ' current screen window
-  long  fontpixelsB                                      ' 8x8 font pixels (2 longs)
+  long  time, hh, mm, ss
+  long  row, col, fgcolor, bgcolor                      ' for text
+  long  left, right, top, bottom                        ' current screen window
+  long  fontpixels                                      ' 8x8 font pixels (2 longs)
 
-' mailboxB for PASM cogB                                  '\
-  long  mailboxB                                         '| command(8b), spare(8b), param(16/8b)
-  long  mailboxB1                                        '| params(32b)
-  long  mailboxB2                                        '| 
-  long  mailboxB3                                        '/ fgcolorB<<16 | bgcolorB
+' mailbox for PASM cog                                  '\
+  long  mailbox                                         '| command(8b), spare(8b), param(16/8b)
+  long  mailbox1                                        '| params(32b)
+  long  mailbox2                                        '| 
+  long  mailbox3                                        '/ fgcolor<<16 | bgcolor
 
-  long  cogB                                             ' pasm cogB+1
+  long  cog                                             ' pasm cog+1
   long stack_space[32]
 
 PUB start
   cognew(cogic, @stack_space)
 
 PRI cogic
-  colB~                                                  ' 0..15
-  rowB~                                                  ' 0..15
-  fgcolorB := white
-  bgcolorB := black 
+
+  col~                                                  ' 0..15
+  row~                                                  ' 0..15
+  fgcolor := white
+  bgcolor := black 
   
   lcdInit                                               ' sw/hw initialise LCD
 
@@ -164,117 +166,193 @@ PRI cogic
   main_roundclock
 
 
-PRI main_roundclock | i, prev, s, j, jprev
-' Round Clock
-
-  clearScreen
-  fgcolorB := green
-  bgcolorB := black
- 
-' Draw Clock Face
-  drawCircle(_CX, _CY, _CD/2, green)
-  rowB := 8
-  colB := 56
-  drawChar("1")
-  drawChar("2")
-  rowB := 16
-  colB := 31
-  drawChar("1")
-  drawChar("1")
-  colB := 89
-  drawChar("1")
-  rowB := 36
-  colB := 15
-  drawChar("1")
-  drawChar("0")
-  colB := 106
-  drawChar("2")
-  rowB := 60
-  colB := 8
-  drawChar("9")
-  colB := 112
-  drawChar("3")
-  rowB := 84
-  colB := 15
-  drawChar("8")
-  colB := 106
-  drawChar("4")
-  rowB := 104
-  colB := 31
-  drawChar("7")
-  colB := 89
-  drawChar("5")
-  rowB := 112
-  colB := 60
-  drawChar("6")
-
-  timeB := cnt
-  s    := clkfreq               ' 1s
-  timeB += s                     ' +1s
-
-' Draw Clock Hands
-  hhB~
-  repeat while hhb < 20
-    drawLine(_CX, _CY, byte[@HH00][hhB*2], byte[@HH00][hhB*2+1], black)           ' remove prev hour hand
-    hhB += 5
-    if hhB => 60
-     hhB~
-    repeat i from 0 to 59
-      drawLine(_CX, _CY, byte[@MH00][prev*2], byte[@MH00][prev*2+1], black)     ' remove prev minute hand
-      drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)       ' show minute hand
-      drawLine(_CX, _CY, byte[@HH00][hhB*2],   byte[@HH00][hhB*2+1], red)         ' show hour hand
-      prev := i
-      repeat j from 0 to 59
-        drawLine(_CX, _CY, byte[@SH00][jprev*2],byte[@SH00][jprev*2+1], black)  ' remove prev second hand
-        drawLine(_CX, _CY, byte[@SH00][j*2],    byte[@SH00][j*2+1], white)      ' show second hand
-        drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)     ' show minute hand
-        drawLine(_CX, _CY, byte[@HH00][hhB*2],   byte[@HH00][hhB*2+1], red)       ' show hour hand
-        jprev := j
-        waitcnt(timeB += s)
-
 
 PRI main_digitalclock | s
 ' Digital Clock
 
   clearScreen
-  fgcolorB := green
-  bgcolorB := black
+  fgcolor := green
+  bgcolor := black
   
-' preset timeB hhB:mmB:ssB
-  hhB := 11
-  mmB := 30
-  ssB := 0
+' preset time hh:mm:ss
+  hh := 11
+  mm := 30
+  ss := 0
 
-  timeB := cnt
+  time := cnt
   s    := clkfreq               ' 1s
-  timeB += s                     ' +1s
+  time += s                     ' +1s
 
   repeat
-    waitcnt(timeB += s)          ' +1s    
-    ssB ++
-    if ssB => 60
-      ssB~
-      mmB++
-      if mmB => 60
-        mmB~
-        hhB++
-        if hhB => 24
-          hhB~
-    ' draw timeB hhB:mmB:ssB          
-    rowB~
-    colB~
-    drawWHChar(3, 6, hhB /  10 + "0")
-    drawWHChar(3, 6, hhB // 10 + "0")
+    waitcnt(time += s)          ' +1s    
+    ss ++
+    if ss => 60
+      ss~
+      mm++
+      if mm => 60
+        mm~
+        hh++
+        if hh => 24
+          hh~
+    ' draw time hh:mm:ss          
+    row~
+    col~
+    drawWHChar(3, 6, hh /  10 + "0")
+    drawWHChar(3, 6, hh // 10 + "0")
     drawWHChar(3, 6, ":")
-    drawWHChar(3, 6, mmB /  10 + "0")
-    drawWHChar(3, 6, mmB // 10 + "0")
-    rowB := 64
-    colB := 64
+    drawWHChar(3, 6, mm /  10 + "0")
+    drawWHChar(3, 6, mm // 10 + "0")
+    row := 64
+    col := 64
     drawWHChar(2, 4, ":")
-    drawWHChar(2, 4, ssB /  10 + "0")
-    drawWHChar(2, 4, ssB // 10 + "0")
+    drawWHChar(2, 4, ss /  10 + "0")
+    drawWHChar(2, 4, ss // 10 + "0")
 
 
+PRI main_roundclock | i, prev, s, j, jprev
+' Round Clock
+
+  clearScreen
+  fgcolor := green
+  bgcolor := black
+ 
+' Draw Clock Face
+  drawCircle(_CX, _CY, _CD/2, green)
+  row := 8
+  col := 56
+  drawChar("1")
+  drawChar("2")
+  row := 16
+  col := 31
+  drawChar("1")
+  drawChar("1")
+  col := 89
+  drawChar("1")
+  row := 36
+  col := 15
+  drawChar("1")
+  drawChar("0")
+  col := 106
+  drawChar("2")
+  row := 60
+  col := 8
+  drawChar("9")
+  col := 112
+  drawChar("3")
+  row := 84
+  col := 15
+  drawChar("8")
+  col := 106
+  drawChar("4")
+  row := 104
+  col := 31
+  drawChar("7")
+  col := 89
+  drawChar("5")
+  row := 112
+  col := 60
+  drawChar("6")
+
+  time := cnt
+  s    := clkfreq               ' 1s
+  time += s                     ' +1s
+
+' Draw Clock Hands
+  hh~
+  repeat while hh < 20
+    drawLine(_CX, _CY, byte[@HH00][hh*2], byte[@HH00][hh*2+1], black)           ' remove prev hour hand
+    hh += 5
+    if hh => 60
+     hh~
+    repeat i from 0 to 59
+      drawLine(_CX, _CY, byte[@MH00][prev*2], byte[@MH00][prev*2+1], black)     ' remove prev minute hand
+      drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)       ' show minute hand
+      drawLine(_CX, _CY, byte[@HH00][hh*2],   byte[@HH00][hh*2+1], red)         ' show hour hand
+      prev := i
+      repeat j from 0 to 59
+        drawLine(_CX, _CY, byte[@SH00][jprev*2],byte[@SH00][jprev*2+1], black)  ' remove prev second hand
+        drawLine(_CX, _CY, byte[@SH00][j*2],    byte[@SH00][j*2+1], white)      ' show second hand
+        drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)     ' show minute hand
+        drawLine(_CX, _CY, byte[@HH00][hh*2],   byte[@HH00][hh*2+1], red)       ' show hour hand
+        jprev := j
+        waitcnt(time += s)
+
+
+PRI drawSomeChars | i
+' Draw some chars
+
+  clearScreen
+  
+  bgcolor := green
+  repeat i from 0 to 255
+    drawChar(" "+i)
+
+
+PRI drawSomeLines
+' Draw some lines
+
+  clearScreen
+  
+  drawLine(0, 0, 127, 127, blue)
+  drawLine(0, 127, 127, 0, blue)  
+  drawLine(20, 20, 107, 107, red)
+  drawLine(20, 107, 107, 20, red)
+  drawLine(20, 63, 107, 63, yellow)
+  drawLine(63, 20, 63, 107, yellow)
+
+
+PRI drawSomeBoxes | x0, y0, x1, y1
+' Draw some diagonal boxes
+
+  clearScreen
+  
+  setWindow($0000,$0000,$001F,$001F)
+  fillWindow(white)
+
+  setWindow($0010,$0010,$002F,$002F)
+  fillWindow(red+green)         ' yellow
+
+  setWindow($0020,$0020,$003F,$003F)
+  fillWindow(blue)
+
+  setWindow($0030,$0030,$004F,$004F)
+  fillWindow(green)
+
+  setWindow($0040,$0040,$005F,$005F)
+  fillWindow(red)
+
+  setWindow($0050,$0050,$006F,$006F)
+  fillWindow(red+blue)          ' purple
+
+  setWindow($0060,$0060,$007F,$007F)
+  fillWindow(blue+green)        ' light blue
+
+  setWindow($0070,$0070,$008F,$008F)                    '???? $8F
+  fillWindow(red+(blue/2))      ' pink
+
+  x0 := 0
+  y0 := 128-16
+  x1 := 16
+  y1 := 128-1
+  repeat 8
+    setWindow(x0,y0,x1,y1)
+    fillWindow(red+green)
+    x0 += 16
+    y0 -= 16
+    x1 += 16
+    y1 -= 16
+
+
+PRI drawSomeCircles
+' Draw some circles
+
+  clearScreen
+  
+  drawCircle(64, 64, 60, green)
+  drawCircle(64, 64, 50, red)
+  drawCircle(64, 64, 40, blue)
+
+  
 ''+-----------------------------------------------------+
 ''| High Level Drivers                                  |
 ''+-----------------------------------------------------+
@@ -323,43 +401,43 @@ PRI fillRectangle(xs, ys, xe, ye, rgb)
 
 PRI drawWHChar(w, h, char) | c, i, j
 ' Draw Wx width, Hx height, char (multi-width & multi-height 8*8 font)
-  setWindow(colB, rowB, colB+(w*8-1), rowB+(h*8-1))
+  setWindow(col, row, col+(w*8-1), row+(h*8-1))
   lcdWriteCmd(LCD_RAM_WRITE)
   c := char & $7F
 
   repeat j from 0 to 1                                  ' 2 sets of 4 rows of pixels...
-    fontpixelsB := long[@font][c+j*128]                  '   get first/second 4 rows of pixels
-    ' draw 1st rowB h*
+    fontpixels := long[@font][c+j*128]                  '   get first/second 4 rows of pixels
+    ' draw 1st row h*
     repeat h
       repeat i from 0 to 7
-        drawWPixels(w, fontpixelsB & (1<<i))
-    ' draw 2nd rowB h*
+        drawWPixels(w, fontpixels & (1<<i))
+    ' draw 2nd row h*
     repeat h
       repeat i from 8 to 15
-        drawWPixels(w, fontpixelsB & (1<<i))
-    ' draw 3rd rowB h*
+        drawWPixels(w, fontpixels & (1<<i))
+    ' draw 3rd row h*
     repeat h
       repeat i from 16 to 23
-        drawWPixels(w, fontpixelsB & (1<<i))
-    ' draw 4th rowB h*
+        drawWPixels(w, fontpixels & (1<<i))
+    ' draw 4th row h*
     repeat h
       repeat i from 24 to 31
-        drawWPixels(w, fontpixelsB & (1<<i))
+        drawWPixels(w, fontpixels & (1<<i))
 
-  colB += w*8
-  if colB => width
-    colB~
-    rowB += h*8
-    if rowB => height
-     rowB~
+  col += w*8
+  if col => width
+    col~
+    row += h*8
+    if row => height
+     row~
 
 PRI drawWPixels(w, bool)
 ' Draw W* pixel(s)
   repeat w
     if (bool)      
-      lcdWriteData16(fgcolorB)
+      lcdWriteData16(fgcolor)
     else                          
-      lcdWriteData16(bgcolorB)
+      lcdWriteData16(bgcolor)
 
 
 ''+-----------------------------------------------------+
@@ -387,6 +465,96 @@ PRI lcdInit
   lcdWriteData($05)                                     ' 16b/pixel
 
 
+{{
+Gamma modes not required
+  lcdWriteCmd(LCD_GAMMA_SET)
+  lcdWriteData($04)                                     ' curve 3
+
+  lcdWriteCmd(LCD_GAMMA_RS)
+  lcdWriteData($01)                                     ' gamma adj enabled
+  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
+
+  lcdWriteCmd(LCD_POS_GAMMA)
+  lcdWriteData($3F)                                     ' 15 params
+  lcdWriteData($25)                                    
+  lcdWriteData($1C)                                    
+  lcdWriteData($1E)                                    
+  lcdWriteData($20)                                    
+  lcdWriteData($12)                                    
+  lcdWriteData($2A)                                    
+  lcdWriteData($90)                                    
+  lcdWriteData($24)                                    
+  lcdWriteData($11)                                    
+  lcdWriteData($00)                                    
+  lcdWriteData($00)                                    
+  lcdWriteData($00)                                    
+  lcdWriteData($00)                                    
+  lcdWriteData($00)
+                                  
+  lcdWriteCmd(LCD_NEG_GAMMA)
+  lcdWriteData($20)                                     ' 15 params
+  lcdWriteData($20)                                    
+  lcdWriteData($20)                                    
+  lcdWriteData($20)                                    
+  lcdWriteData($05)                                    
+  lcdWriteData($00)                                    
+  lcdWriteData($15)                                    
+  lcdWriteData($A7)                                    
+  lcdWriteData($3D)                                    
+  lcdWriteData($18)                                    
+  lcdWriteData($25)                                    
+  lcdWriteData($2A)                                    
+  lcdWriteData($2B)                                    
+  lcdWriteData($2B)                                    
+  lcdWriteData($3A)
+}}
+
+
+{{ 007
+Frame and Power modes default correctly              
+  lcdWriteCmd(LCD_FRAME_CTL1)                           ' normal/full
+  lcdWriteData($08)                                     ' DIVA=8
+  lcdWriteData($08)                                     ' VPA=8
+  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
+  
+  lcdWriteCmd(LCD_INVERSION_CTL)
+  lcdWriteData($07)                                     ' NLA=NLB=NLC=1
+  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
+
+  lcdWriteCmd(LCD_POWER_CTL1)
+  lcdWriteData($0A)                                     ' VRH=10 GVDD=4.30
+  lcdWriteData($02)                                     ' VC=2 VCI1=2.65
+  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
+
+  lcdWriteCmd(LCD_POWER_CTL2)
+  lcdWriteData($02)                                     ' BT=2 AVDD=2xVCI1 VCL=-1xVCI1 VGH=5xVCI1 VGL=-2xVCI1
+  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
+
+  lcdWriteCmd(LCD_VCOM_CTL1)
+  lcdWriteData($50)                                     ' VMH=80 VCOMH=4.5
+  lcdWriteData($5B)                                     ' VML=91 VCOML=-0.225
+  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
+
+  lcdWriteCmd(LCD_VCOM_OFFSET)
+  lcdWriteData($40)                                     ' NVM=0 VMF=64 VCOMH=VMH VCOML=VML
+  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
+}}
+
+{{
+Row & Cols default correctly 128*128
+  lcdWriteCmd(LCD_COL_ADR)
+  lcdWriteData($00)                                     ' XSH
+  lcdWriteData($00)                                     ' XSL
+  lcdWriteData($00)                                     ' XEH
+  lcdWriteData($7F)                                     ' XEL (128 pixels wide)
+
+  lcdWriteCmd(LCD_ROW_ADR)
+  lcdWriteData($00)                                     ' YSH
+  lcdWriteData($00)                                     ' YSL
+  lcdWriteData($00)                                     ' YEH
+  lcdWriteData($7F)                                     ' YEL (128 pixels high)
+}}
+
 ' set display orientation
   lcdWriteCmd(LCD_MADCTR)                               ' mem addr ctrl
   if yoffset <> 0                                       ' black=32, red=0
@@ -402,61 +570,61 @@ PRI lcdInit
 
 
 ''+-----------------------------------------------------+
-''| Low Level Drivers - call fast PASM via mailboxB(es)  |
+''| Low Level Drivers - call fast PASM via mailbox(es)  |
 ''+-----------------------------------------------------+
 
 PRI lcdSetup
-  'start pasm cogB and wait till running
-  mailboxB := $0FFF                                      ' non-zero
-  cogB := cognew(@entry, @mailboxB) +1                    ' start LCD Driver cogB
-  repeat while mailboxB <> 0                             ' wait until cogB running
+  'start pasm cog and wait till running
+  mailbox := $0FFF                                      ' non-zero
+  cog := cognew(@entry, @mailbox) +1                    ' start LCD Driver Cog
+  repeat while mailbox <> 0                             ' wait until cog running
 
 PRI lcdReset
-  mailboxB := $FF_00_0000                                ' hw reset LCD
-  repeat while mailboxB <> 0
+  mailbox := $FF_00_0000                                ' hw reset LCD
+  repeat while mailbox <> 0
   
 PRI lcdWriteData16(val)
   lcdWriteData(val >> 8)
   lcdWriteData(val & $FF)
 
 PRI lcdWriteData(val)
-  mailboxB := $100 | val                                 ' dc=data=1
-  repeat while mailboxB <> 0
+  mailbox := $100 | val                                 ' dc=data=1
+  repeat while mailbox <> 0
 
 PRI lcdWriteCmd(val)
-  mailboxB := val                                        ' dc=cmd=0
-  repeat while mailboxB <> 0
+  mailbox := val                                        ' dc=cmd=0
+  repeat while mailbox <> 0
 
 PRI setWindow(xs, ys, xe, ye)
-  leftB   := xs
-  topB    := ys
-  rightB  := xe
-  bottomB := ye
-  mailboxB1 := (xs<<24) | (ys<<16) | (xe<<8) | ye        ' xs, ys, xe, ye 
-  mailboxB := $81_00_0000
-  repeat while mailboxB <> 0
+  left   := xs
+  top    := ys
+  right  := xe
+  bottom := ye
+  mailbox1 := (xs<<24) | (ys<<16) | (xe<<8) | ye        ' xs, ys, xe, ye 
+  mailbox := $81_00_0000
+  repeat while mailbox <> 0
 
 PRI fillWindow(rgb) | n
 ' Fill Window/Rectangle - calc pixels & write
-  n := (rightB - leftB +1)*(bottomB - topB +1)              ' calc no. of pixels
-  mailboxB1 := (rgb << 16) | n
-  mailboxB := $82_00_0000
-  repeat while mailboxB <> 0
+  n := (right - left +1)*(bottom - top +1)              ' calc no. of pixels
+  mailbox1 := (rgb << 16) | n
+  mailbox := $82_00_0000
+  repeat while mailbox <> 0
 
 PRI drawChar(char) 
 ' Draw a Char (8*8 font)
-  setWindow(colB, rowB, colB+7, rowB+7)                     ' set 8*8 font pixel window
+  setWindow(col, row, col+7, row+7)                     ' set 8*8 font pixel window
 
-  mailboxB3 := (fgcolorB << 16) | bgcolorB
-  mailboxB  := $83_00_0000 | (char & $7F)
-  repeat while mailboxB <> 0
+  mailbox3 := (fgcolor << 16) | bgcolor
+  mailbox  := $83_00_0000 | (char & $7F)
+  repeat while mailbox <> 0
 
-  colB += 8
-  if colB => width
-    colB~
-    rowB += 8
-    if rowB => height
-     rowB~
+  col += 8
+  if col => width
+    col~
+    row += 8
+    if row => height
+     row~
 
 
 DAT
@@ -477,7 +645,7 @@ setup           mov     outa, outmask                   ' preset levels
                 call    #wait50
                 call    #wait50
 
-done            wrlong  zero, hubptr                    ' clear hub mailboxB
+done            wrlong  zero, hubptr                    ' clear hub mailbox
 wait            rdlong  data, hubptr      wz            ' wait for something to do
         if_z    jmp     #wait
 
@@ -543,12 +711,12 @@ fill            mov     data, #LCD_RAM_WRITE
                 jmp     #done
 
 ''+-----------------------------------------------------+
-''| LCD PaintChar(char)   mailboxB3=fgcolorB/bgcolorB      |
+''| LCD PaintChar(char)   mailbox3=fgcolor/bgcolor      |
 ''+-----------------------------------------------------+
-paintchar       rdlong  fg, hubptr3                     ' get fgcolorB/bgcolorB
+paintchar       rdlong  fg, hubptr3                     ' get fgcolor/bgcolor
                 mov     bg, fg
-                shr     fg, #16                         ' extract fgcolorB
-                and     bg, xFFFF                       ' extract bgcolorB
+                shr     fg, #16                         ' extract fgcolor
+                and     bg, xFFFF                       ' extract bgcolor
                 and     data, #$7F                      ' char =<$7F
                 movs    paint4rows, #font               ' point to start of font
                 add     paint4rows, data                ' point to first 4 rows of font pixels
@@ -565,9 +733,9 @@ paint4rows      mov     pixels, 0-0                     ' get first/second 4 row
                 rev     pixels, #32                     ' reverse font pixels
                 mov     ctr, #32                        ' 32 pixels
 :paintpixel     rol     pixels, #1              wc
-        if_c    mov     data, fg                        ' "1" = fgcolorB
-        if_nc   mov     data, bg                        ' "0" = bgcolorB
-                call    #write16data                    ' write fgcolorB/bgcolorB(16b) pixel(1)
+        if_c    mov     data, fg                        ' "1" = fgcolor
+        if_nc   mov     data, bg                        ' "0" = bgcolor
+                call    #write16data                    ' write fgcolor/bgcolor(16b) pixel(1)
                 djnz    ctr, #:paintpixel
 paint4rows_ret  ret
 
@@ -1915,13 +2083,13 @@ font          byte      %00000000               ' ........    $00
 ''| PASM Constants & Variables                          |
 ''+-----------------------------------------------------+
 
-outmask         long    1<<PIN_3V3B | 0<<PIN_GNDB | 1<<PIN_CEB | 1<<PIN_RSTB | 0<<PIN_DCB | 0<<PIN_SDAB | 1<<PIN_CLKB | 1<<PIN_LEDB
-dirmask         long    1<<PIN_3V3B | 1<<PIN_GNDB | 1<<PIN_CEB | 1<<PIN_RSTB | 1<<PIN_DCB | 1<<PIN_SDAB | 1<<PIN_CLKB | 1<<PIN_LEDB
-csmask          long    1<<PIN_CEB
-rstmask         long    1<<PIN_RSTB
-dcmask          long    1<<PIN_DCB
-sdamask         long    1<<PIN_SDAB
-clkmask         long    1<<PIN_CLKB
+outmask         long    1<<PIN_3V3 | 0<<PIN_GND | 1<<PIN_CE | 1<<PIN_RST | 0<<PIN_DC | 0<<PIN_SDA | 1<<PIN_CLK | 1<<PIN_LED
+dirmask         long    1<<PIN_3V3 | 1<<PIN_GND | 1<<PIN_CE | 1<<PIN_RST | 1<<PIN_DC | 1<<PIN_SDA | 1<<PIN_CLK | 1<<PIN_LED
+csmask          long    1<<PIN_CE
+rstmask         long    1<<PIN_RST
+dcmask          long    1<<PIN_DC
+sdamask         long    1<<PIN_SDA
+clkmask         long    1<<PIN_CLK
 
 delay50ms       long    104_000_000 / 1000 * 50         ' 50ms at 96MHz (will be a bit longer if <104MHz)
 zero            long    0
@@ -2160,3 +2328,4 @@ dat
 |ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         |
 +------------------------------------------------------------------------------------------------------------------------------+
 }}
+ 

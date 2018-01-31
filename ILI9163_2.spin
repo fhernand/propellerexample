@@ -118,9 +118,12 @@ VAR
   long  mailboxB3                                        '/ fgcolorB<<16 | bgcolorB
 
   long  cogB                                             ' pasm cogB+1
+  long stack_space[32]
 
-PUB start 
+PUB start
+  cognew(cogic, @stack_space)
 
+PRI cogic
   colB~                                                  ' 0..15
   rowB~                                                  ' 0..15
   fgcolorB := white

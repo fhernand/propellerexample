@@ -45,8 +45,8 @@ CON
 ' _XINFREQ      = 6_500_000         '\ set for 6.50MHz (CpuBlade/RamBlade/RamBlade3/TriBlade#2)
 ' _CLKMODE      = xtal1 + pll16x    '/
 
-  _XINFREQ      = 12_000_000        '\ set for 12.00MHz (P8XBlade2)
-  _CLKMODE      = xtal1 + pll8x     '/
+ ' _XINFREQ      = 12_000_000        '\ set for 12.00MHz (P8XBlade2)
+ ' _CLKMODE      = xtal1 + pll8x     '/
 
 ' LCD Connector J2
   PIN_3V3       = 0 '   '0         ' 3v3 pwr supplied by prop pin

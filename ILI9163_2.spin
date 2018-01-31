@@ -168,57 +168,57 @@ PRI main_roundclock | i, prev, s, j, jprev
 ' Round Clock
 
   clearScreen
-  fgcolor := green
-  bgcolor := black
+  fgcolorB := green
+  bgcolorB := black
  
 ' Draw Clock Face
   drawCircle(_CX, _CY, _CD/2, green)
-  row := 8
-  col := 56
+  rowB := 8
+  colB := 56
   drawChar("1")
   drawChar("2")
-  row := 16
-  col := 31
+  rowB := 16
+  colB := 31
   drawChar("1")
   drawChar("1")
-  col := 89
+  colB := 89
   drawChar("1")
-  row := 36
-  col := 15
+  rowB := 36
+  colB := 15
   drawChar("1")
   drawChar("0")
-  col := 106
+  colB := 106
   drawChar("2")
-  row := 60
-  col := 8
+  rowB := 60
+  colB := 8
   drawChar("9")
-  col := 112
+  colB := 112
   drawChar("3")
-  row := 84
-  col := 15
+  rowB := 84
+  colB := 15
   drawChar("8")
-  col := 106
+  colB := 106
   drawChar("4")
-  row := 104
-  col := 31
+  rowB := 104
+  colB := 31
   drawChar("7")
-  col := 89
+  colB := 89
   drawChar("5")
-  row := 112
-  col := 60
+  rowB := 112
+  colB := 60
   drawChar("6")
 
-  time := cnt
+  timeB := cnt
   s    := clkfreq               ' 1s
-  time += s                     ' +1s
+  timBe += s                     ' +1s
 
 ' Draw Clock Hands
-  hh~
+  hhB~
   repeat while hh < 20
-    drawLine(_CX, _CY, byte[@HH00][hh*2], byte[@HH00][hh*2+1], black)           ' remove prev hour hand
-    hh += 5
-    if hh => 60
-     hh~
+    drawLine(_CX, _CY, byte[@HH00][hhB*2], byte[@HH00][hhB*2+1], black)           ' remove prev hour hand
+    hhB += 5
+    if hhB => 60
+     hhB~
     repeat i from 0 to 59
       drawLine(_CX, _CY, byte[@MH00][prev*2], byte[@MH00][prev*2+1], black)     ' remove prev minute hand
       drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)       ' show minute hand
@@ -228,9 +228,9 @@ PRI main_roundclock | i, prev, s, j, jprev
         drawLine(_CX, _CY, byte[@SH00][jprev*2],byte[@SH00][jprev*2+1], black)  ' remove prev second hand
         drawLine(_CX, _CY, byte[@SH00][j*2],    byte[@SH00][j*2+1], white)      ' show second hand
         drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)     ' show minute hand
-        drawLine(_CX, _CY, byte[@HH00][hh*2],   byte[@HH00][hh*2+1], red)       ' show hour hand
+        drawLine(_CX, _CY, byte[@HH00][hhB*2],   byte[@HH00][hhB*2+1], red)       ' show hour hand
         jprev := j
-        waitcnt(time += s)
+        waitcnt(timeB += s)
 
 
 PRI main_digitalclock | s

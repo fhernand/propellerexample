@@ -141,7 +141,7 @@ VAR
   long stack_space1[32]
 
 PUB start
-  cognew(cogic, @stack_space)
+  cognew(cogic, @stack_space1)
 
 PRI cogic
   col~                                                  ' 0..15

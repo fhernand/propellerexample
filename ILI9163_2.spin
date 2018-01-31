@@ -104,26 +104,6 @@ CON
   yoffset= 0                    '\  black pcb = 0 (screen y offset)
 ' yoffset= 32                   '/  red   pcb = 32
 
-'                 ' sin(x) * 1024    ' degrees
-Z00     =    0    ' 0.0000 * 1024    '  0 
-Z01     =  107    ' 0.1045 * 1024    '  6
-Z02     =  213    ' 0.2079 * 1024    ' 12
-Z03     =  316    ' 0.3090 * 1024    ' 18
-Z04     =  416    ' 0.4067 * 1024    ' 24
-Z05     =  512    ' 0.5000 * 1024    ' 30
-Z06     =  602    ' 0.5878 * 1024    ' 36
-Z07     =  685    ' 0.6691 * 1024    ' 42
-Z08     =  761    ' 0.7431 * 1024    ' 48
-Z09     =  828    ' 0.8090 * 1024    ' 54
-Z10     =  887    ' 0.8660 * 1024    ' 60
-Z11     =  935    ' 0.9135 * 1024    ' 66
-Z12     =  974    ' 0.9511 * 1024    ' 72
-Z13     = 1002    ' 0.9781 * 1024    ' 78
-Z14     = 1018    ' 0.9945 * 1024    ' 84
-Z15     = 1024    ' 1.0000 * 1024    ' 90
-'180    =     ' 0.0000 * 1024    '    180
-'270    =     '-1.0000 * 1024    '    270
-
 VAR
 
   long  time, hh, mm, ss
@@ -307,89 +287,6 @@ PRI lcdInit
   lcdWriteCmd(LCD_PIXEL_FORMAT)
   lcdWriteData($05)                                     ' 16b/pixel
 
-
-{{
-Gamma modes not required
-  lcdWriteCmd(LCD_GAMMA_SET)
-  lcdWriteData($04)                                     ' curve 3
-  lcdWriteCmd(LCD_GAMMA_RS)
-  lcdWriteData($01)                                     ' gamma adj enabled
-  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
-  lcdWriteCmd(LCD_POS_GAMMA)
-  lcdWriteData($3F)                                     ' 15 params
-  lcdWriteData($25)                                    
-  lcdWriteData($1C)                                    
-  lcdWriteData($1E)                                    
-  lcdWriteData($20)                                    
-  lcdWriteData($12)                                    
-  lcdWriteData($2A)                                    
-  lcdWriteData($90)                                    
-  lcdWriteData($24)                                    
-  lcdWriteData($11)                                    
-  lcdWriteData($00)                                    
-  lcdWriteData($00)                                    
-  lcdWriteData($00)                                    
-  lcdWriteData($00)                                    
-  lcdWriteData($00)
-                                  
-  lcdWriteCmd(LCD_NEG_GAMMA)
-  lcdWriteData($20)                                     ' 15 params
-  lcdWriteData($20)                                    
-  lcdWriteData($20)                                    
-  lcdWriteData($20)                                    
-  lcdWriteData($05)                                    
-  lcdWriteData($00)                                    
-  lcdWriteData($15)                                    
-  lcdWriteData($A7)                                    
-  lcdWriteData($3D)                                    
-  lcdWriteData($18)                                    
-  lcdWriteData($25)                                    
-  lcdWriteData($2A)                                    
-  lcdWriteData($2B)                                    
-  lcdWriteData($2B)                                    
-  lcdWriteData($3A)
-}}
-
-
-{{ 007
-Frame and Power modes default correctly              
-  lcdWriteCmd(LCD_FRAME_CTL1)                           ' normal/full
-  lcdWriteData($08)                                     ' DIVA=8
-  lcdWriteData($08)                                     ' VPA=8
-  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
-  
-  lcdWriteCmd(LCD_INVERSION_CTL)
-  lcdWriteData($07)                                     ' NLA=NLB=NLC=1
-  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
-  lcdWriteCmd(LCD_POWER_CTL1)
-  lcdWriteData($0A)                                     ' VRH=10 GVDD=4.30
-  lcdWriteData($02)                                     ' VC=2 VCI1=2.65
-  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
-  lcdWriteCmd(LCD_POWER_CTL2)
-  lcdWriteData($02)                                     ' BT=2 AVDD=2xVCI1 VCL=-1xVCI1 VGH=5xVCI1 VGL=-2xVCI1
-  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
-  lcdWriteCmd(LCD_VCOM_CTL1)
-  lcdWriteData($50)                                     ' VMH=80 VCOMH=4.5
-  lcdWriteData($5B)                                     ' VML=91 VCOML=-0.225
-  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
-  lcdWriteCmd(LCD_VCOM_OFFSET)
-  lcdWriteData($40)                                     ' NVM=0 VMF=64 VCOMH=VMH VCOML=VML
-  waitcnt(clkfreq/1000 + cnt)                           ' 1ms
-}}
-
-{{
-Row & Cols default correctly 128*128
-  lcdWriteCmd(LCD_COL_ADR)
-  lcdWriteData($00)                                     ' XSH
-  lcdWriteData($00)                                     ' XSL
-  lcdWriteData($00)                                     ' XEH
-  lcdWriteData($7F)                                     ' XEL (128 pixels wide)
-  lcdWriteCmd(LCD_ROW_ADR)
-  lcdWriteData($00)                                     ' YSH
-  lcdWriteData($00)                                     ' YSL
-  lcdWriteData($00)                                     ' YEH
-  lcdWriteData($7F)                                     ' YEL (128 pixels high)
-}}
 
 ' set display orientation
   lcdWriteCmd(LCD_MADCTR)                               ' mem addr ctrl

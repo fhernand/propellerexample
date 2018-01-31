@@ -9,7 +9,7 @@
 '' RR20150101       Commence
 ''                  Screen is 128*128 offset by 32
 '' RR20150121  023  drawLine, drawCircle, drawPixel, setWindow, fillWindow, fillRectangle, drawChar working
-''             030  clock working (fast, no time set, etc)  
+''             030  clock working (fast, no timeB set, etc)  
 ''             032  digital clock
 ''             033  double height clock
 ''             035  tripple height double width clock
@@ -135,16 +135,16 @@ _CH     = 30                    ' hour   hand length
 
 VAR
 
-  long  time, hh, mm, ss
-  long  row, col, fgcolor, bgcolor                      ' for text
-  long  left, right, top, bottom                        ' current screen window
-  long  fontpixels                                      ' 8x8 font pixels (2 longs)
+  long  timeB, hhB, mmB, ssB
+  long  rowB, colB, fgcolorB, bgcolorB                      ' for text
+  long  leftB, rightB, topB, bottomB                        ' current screen window
+  long  fontpixelsB                                      ' 8x8 font pixels (2 longs)
 
 ' mailboxB for PASM cogB                                  '\
   long  mailboxB                                         '| command(8b), spare(8b), param(16/8b)
   long  mailbox1B                                        '| params(32b)
   long  mailbox2B                                        '| 
-  long  mailbox3B                                        '/ fgcolor<<16 | bgcolor
+  long  mailbox3B                                        '/ fgcolorB<<16 | bgcolorB
 
   long  cogB                                             ' pasm cogB+1
   long stack_space2[32]
@@ -154,10 +154,10 @@ PUB start
 
 PRI cogic
 
-  col~                                                  ' 0..15
-  row~                                                  ' 0..15
-  fgcolor := white
-  bgcolor := black 
+  colB~                                                  ' 0..15
+  rowB~                                                  ' 0..15
+  fgcolorB := white
+  bgcolorB := black 
   
   lcdInit                                               ' sw/hw initialise LCD
 
@@ -171,111 +171,111 @@ PRI main_digitalclock | s
 ' Digital Clock
 
   clearScreen
-  fgcolor := green
-  bgcolor := black
+  fgcolorB := green
+  bgcolorB := black
   
-' preset time hh:mm:ss
-  hh := 11
-  mm := 30
-  ss := 0
+' preset timeB hhB:mmB:ssB
+  hhB := 11
+  mmB := 30
+  ssB := 0
 
-  time := cnt
+  timeB := cnt
   s    := clkfreq               ' 1s
-  time += s                     ' +1s
+  timeB += s                     ' +1s
 
   repeat
-    waitcnt(time += s)          ' +1s    
-    ss ++
-    if ss => 60
-      ss~
-      mm++
-      if mm => 60
-        mm~
-        hh++
-        if hh => 24
-          hh~
-    ' draw time hh:mm:ss          
-    row~
-    col~
-    drawWHChar(3, 6, hh /  10 + "0")
-    drawWHChar(3, 6, hh // 10 + "0")
+    waitcnt(timeB += s)          ' +1s    
+    ssB ++
+    if ssB => 60
+      ssB~
+      mmB++
+      if mmB => 60
+        mmB~
+        hhB++
+        if hhB => 24
+          hhB~
+    ' draw timeB hhB:mmB:ssB          
+    rowB~
+    colB~
+    drawWHChar(3, 6, hhB /  10 + "0")
+    drawWHChar(3, 6, hhB // 10 + "0")
     drawWHChar(3, 6, ":")
-    drawWHChar(3, 6, mm /  10 + "0")
-    drawWHChar(3, 6, mm // 10 + "0")
-    row := 64
-    col := 64
+    drawWHChar(3, 6, mmB /  10 + "0")
+    drawWHChar(3, 6, mmB // 10 + "0")
+    rowB := 64
+    colB := 64
     drawWHChar(2, 4, ":")
-    drawWHChar(2, 4, ss /  10 + "0")
-    drawWHChar(2, 4, ss // 10 + "0")
+    drawWHChar(2, 4, ssB /  10 + "0")
+    drawWHChar(2, 4, ssB // 10 + "0")
 
 
 PRI main_roundclock | i, prev, s, j, jprev
 ' Round Clock
 
   clearScreen
-  fgcolor := green
-  bgcolor := black
+  fgcolorB := green
+  bgcolorB := black
  
 ' Draw Clock Face
   drawCircle(_CX, _CY, _CD/2, green)
-  row := 8
-  col := 56
+  rowB := 8
+  colB := 56
   drawChar("1")
   drawChar("2")
-  row := 16
-  col := 31
+  rowB := 16
+  colB := 31
   drawChar("1")
   drawChar("1")
-  col := 89
+  colB := 89
   drawChar("1")
-  row := 36
-  col := 15
+  rowB := 36
+  colB := 15
   drawChar("1")
   drawChar("0")
-  col := 106
+  colB := 106
   drawChar("2")
-  row := 60
-  col := 8
+  rowB := 60
+  colB := 8
   drawChar("9")
-  col := 112
+  colB := 112
   drawChar("3")
-  row := 84
-  col := 15
+  rowB := 84
+  colB := 15
   drawChar("8")
-  col := 106
+  colB := 106
   drawChar("4")
-  row := 104
-  col := 31
+  rowB := 104
+  colB := 31
   drawChar("7")
-  col := 89
+  colB := 89
   drawChar("5")
-  row := 112
-  col := 60
+  rowB := 112
+  colB := 60
   drawChar("6")
 
-  time := cnt
+  timeB := cnt
   s    := clkfreq               ' 1s
-  time += s                     ' +1s
+  timeB += s                     ' +1s
 
 ' Draw Clock Hands
-  hh~
-  repeat while hh < 20
-    drawLine(_CX, _CY, byte[@HH00][hh*2], byte[@HH00][hh*2+1], black)           ' remove prev hour hand
-    hh += 5
-    if hh => 60
-     hh~
+  hhB~
+  repeat while hhB < 20
+    drawLine(_CX, _CY, byte[@HH00][hhB*2], byte[@HH00][hhB*2+1], black)           ' remove prev hour hand
+    hhB += 5
+    if hhB => 60
+     hhB~
     repeat i from 0 to 59
       drawLine(_CX, _CY, byte[@MH00][prev*2], byte[@MH00][prev*2+1], black)     ' remove prev minute hand
       drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)       ' show minute hand
-      drawLine(_CX, _CY, byte[@HH00][hh*2],   byte[@HH00][hh*2+1], red)         ' show hour hand
+      drawLine(_CX, _CY, byte[@HH00][hhB*2],   byte[@HH00][hhB*2+1], red)         ' show hour hand
       prev := i
       repeat j from 0 to 59
         drawLine(_CX, _CY, byte[@SH00][jprev*2],byte[@SH00][jprev*2+1], black)  ' remove prev second hand
         drawLine(_CX, _CY, byte[@SH00][j*2],    byte[@SH00][j*2+1], white)      ' show second hand
         drawLine(_CX, _CY, byte[@MH00][i*2],    byte[@MH00][i*2+1], yellow)     ' show minute hand
-        drawLine(_CX, _CY, byte[@HH00][hh*2],   byte[@HH00][hh*2+1], red)       ' show hour hand
+        drawLine(_CX, _CY, byte[@HH00][hhB*2],   byte[@HH00][hhB*2+1], red)       ' show hour hand
         jprev := j
-        waitcnt(time += s)
+        waitcnt(timeB += s)
 
 
 PRI drawSomeChars | i
@@ -283,7 +283,7 @@ PRI drawSomeChars | i
 
   clearScreen
   
-  bgcolor := green
+  bgcolorB := green
   repeat i from 0 to 255
     drawChar(" "+i)
 
@@ -401,43 +401,43 @@ PRI fillRectangle(xs, ys, xe, ye, rgb)
 
 PRI drawWHChar(w, h, char) | c, i, j
 ' Draw Wx width, Hx height, char (multi-width & multi-height 8*8 font)
-  setWindow(col, row, col+(w*8-1), row+(h*8-1))
+  setWindow(colB, rowB, colB+(w*8-1), rowB+(h*8-1))
   lcdWriteCmd(LCD_RAM_WRITE)
   c := char & $7F
 
   repeat j from 0 to 1                                  ' 2 sets of 4 rows of pixels...
-    fontpixels := long[@font][c+j*128]                  '   get first/second 4 rows of pixels
-    ' draw 1st row h*
+    fontpixelsB := long[@font][c+j*128]                  '   get first/second 4 rows of pixels
+    ' draw 1st rowB h*
     repeat h
       repeat i from 0 to 7
-        drawWPixels(w, fontpixels & (1<<i))
-    ' draw 2nd row h*
+        drawWPixels(w, fontpixelsB & (1<<i))
+    ' draw 2nd rowB h*
     repeat h
       repeat i from 8 to 15
-        drawWPixels(w, fontpixels & (1<<i))
-    ' draw 3rd row h*
+        drawWPixels(w, fontpixelsB & (1<<i))
+    ' draw 3rd rowB h*
     repeat h
       repeat i from 16 to 23
-        drawWPixels(w, fontpixels & (1<<i))
-    ' draw 4th row h*
+        drawWPixels(w, fontpixelsB & (1<<i))
+    ' draw 4th rowB h*
     repeat h
       repeat i from 24 to 31
-        drawWPixels(w, fontpixels & (1<<i))
+        drawWPixels(w, fontpixelsB & (1<<i))
 
-  col += w*8
-  if col => width
-    col~
-    row += h*8
-    if row => height
-     row~
+  colB += w*8
+  if colB => width
+    colB~
+    rowB += h*8
+    if rowB => height
+     rowB~
 
 PRI drawWPixels(w, bool)
 ' Draw W* pixel(s)
   repeat w
     if (bool)      
-      lcdWriteData16(fgcolor)
+      lcdWriteData16(fgcolorB)
     else                          
-      lcdWriteData16(bgcolor)
+      lcdWriteData16(bgcolorB)
 
 
 ''+-----------------------------------------------------+
@@ -541,7 +541,7 @@ Frame and Power modes default correctly
 }}
 
 {{
-Row & Cols default correctly 128*128
+rowB & Cols default correctly 128*128
   lcdWriteCmd(LCD_COL_ADR)
   lcdWriteData($00)                                     ' XSH
   lcdWriteData($00)                                     ' XSL
@@ -596,35 +596,35 @@ PRI lcdWriteCmd(val)
   repeat while mailboxB <> 0
 
 PRI setWindow(xs, ys, xe, ye)
-  left   := xs
-  top    := ys
-  right  := xe
-  bottom := ye
+  leftB   := xs
+  topB    := ys
+  rightB  := xe
+  bottomB := ye
   mailbox1B := (xs<<24) | (ys<<16) | (xe<<8) | ye        ' xs, ys, xe, ye 
   mailboxB := $81_00_0000
   repeat while mailboxB <> 0
 
 PRI fillWindow(rgb) | n
 ' Fill Window/Rectangle - calc pixels & write
-  n := (right - left +1)*(bottom - top +1)              ' calc no. of pixels
+  n := (rightB - leftB +1)*(bottomB - topB +1)              ' calc no. of pixels
   mailbox1B := (rgb << 16) | n
   mailboxB := $82_00_0000
   repeat while mailboxB <> 0
 
 PRI drawChar(char) 
 ' Draw a Char (8*8 font)
-  setWindow(col, row, col+7, row+7)                     ' set 8*8 font pixel window
+  setWindow(colB, rowB, colB+7, rowB+7)                     ' set 8*8 font pixel window
 
-  mailbox3B := (fgcolor << 16) | bgcolor
+  mailbox3B := (fgcolorB << 16) | bgcolorB
   mailboxB  := $83_00_0000 | (char & $7F)
   repeat while mailboxB <> 0
 
-  col += 8
-  if col => width
-    col~
-    row += 8
-    if row => height
-     row~
+  colB += 8
+  if colB => width
+    colB~
+    rowB += 8
+    if rowB => height
+     rowB~
 
 
 DAT
@@ -711,12 +711,12 @@ fill            mov     data, #LCD_RAM_WRITE
                 jmp     #done
 
 ''+-----------------------------------------------------+
-''| LCD PaintChar(char)   mailbox3B=fgcolor/bgcolor      |
+''| LCD PaintChar(char)   mailbox3B=fgcolorB/bgcolorB      |
 ''+-----------------------------------------------------+
-paintchar       rdlong  fg, hubptr3                     ' get fgcolor/bgcolor
+paintchar       rdlong  fg, hubptr3                     ' get fgcolorB/bgcolorB
                 mov     bg, fg
-                shr     fg, #16                         ' extract fgcolor
-                and     bg, xFFFF                       ' extract bgcolor
+                shr     fg, #16                         ' extract fgcolorB
+                and     bg, xFFFF                       ' extract bgcolorB
                 and     data, #$7F                      ' char =<$7F
                 movs    paint4rows, #font               ' point to start of font
                 add     paint4rows, data                ' point to first 4 rows of font pixels
@@ -733,9 +733,9 @@ paint4rows      mov     pixels, 0-0                     ' get first/second 4 row
                 rev     pixels, #32                     ' reverse font pixels
                 mov     ctr, #32                        ' 32 pixels
 :paintpixel     rol     pixels, #1              wc
-        if_c    mov     data, fg                        ' "1" = fgcolor
-        if_nc   mov     data, bg                        ' "0" = bgcolor
-                call    #write16data                    ' write fgcolor/bgcolor(16b) pixel(1)
+        if_c    mov     data, fg                        ' "1" = fgcolorB
+        if_nc   mov     data, bg                        ' "0" = bgcolorB
+                call    #write16data                    ' write fgcolorB/bgcolorB(16b) pixel(1)
                 djnz    ctr, #:paintpixel
 paint4rows_ret  ret
 

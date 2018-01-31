@@ -19,7 +19,7 @@
 '' RR20150219  050  power LCD from prop pins (~2.0mA) [DID NOT WORK - must want 5V not 3V3 else change params!!!]
 '' RR20161011  051  P8XBlade2 (power from prop pins - v050 didn't enable PWR/GND DIRA pins) 
 '' RR20161011  052  create lcdSetup routine in low level routines (ready for pasm)
-''             053  some fast pasm routines wkg in separate cog (delays added for viewing)
+''             053  some fast pasm routines wkg in separate cogB (delays added for viewing)
 ''             054  code tidy
 '' RR20161015  055  Release
 
@@ -111,13 +111,13 @@ VAR
   long  left, right, top, bottom                        ' current screen window
   long  fontpixels                                      ' 8x8 font pixels (2 longs)
 
-' mailboxB for PASM cog                                  '\
+' mailboxB for PASM cogB                                  '\
   long  mailboxB                                         '| command(8b), spare(8b), param(16/8b)
   long  mailboxB1                                        '| params(32b)
   long  mailboxB2                                        '| 
   long  mailboxB3                                        '/ fgcolor<<16 | bgcolor
 
-  long  cog                                             ' pasm cog+1
+  long  cogB                                             ' pasm cogB+1
 
 PUB start 
 
@@ -307,10 +307,10 @@ PRI lcdInit
 ''+-----------------------------------------------------+
 
 PRI lcdSetup
-  'start pasm cog and wait till running
+  'start pasm cogB and wait till running
   mailboxB := $0FFF                                      ' non-zero
-  cog := cognew(@entry, @mailboxB) +1                    ' start LCD Driver Cog
-  repeat while mailboxB <> 0                             ' wait until cog running
+  cogB := cognew(@entry, @mailboxB) +1                    ' start LCD Driver cogB
+  repeat while mailboxB <> 0                             ' wait until cogB running
 
 PRI lcdReset
   mailboxB := $FF_00_0000                                ' hw reset LCD

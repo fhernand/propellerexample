@@ -419,7 +419,7 @@ Row & Cols default correctly 128*128
 PRI lcdSetup
   'start pasm cog and wait till running
   mailbox := $0FFF                                      ' non-zero
-  cog := cognew(@entry, @mailbox) ' +1                    ' start LCD Driver Cog
+  cog := cognew(@entry, @mailbox) +1                    ' start LCD Driver Cog
   repeat while mailbox <> 0                             ' wait until cog running
 
 PRI lcdReset

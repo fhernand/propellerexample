@@ -1,6 +1,8 @@
 CON
-  _clkmode = xtal1 + pll16x                           
-  _xinfreq = 5_000_000
+  _XINFREQ      = 12_000_000        '\ set for 12.00MHz (P8XBlade2)
+  _CLKMODE      = xtal1 + pll8x     '/
+  '_clkmode = xtal1 + pll16x                           
+  '_xinfreq = 5_000_000
 
 OBJ
   OLED_Test :     "OLED_Test"      ''OLED dedicated SPI engine in Assembly

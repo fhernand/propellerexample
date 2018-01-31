@@ -49,14 +49,14 @@ CON
  ' _CLKMODE      = xtal1 + pll8x     '/
 
 ' LCD Connector J2
-  PIN_3V3       = 0 '   '0         ' 3v3 pwr supplied by prop pin
-  PIN_GND       = 1 '   '1         ' GND pwr supplied by prop pin
-  PIN_CE        = 11 '0  '2         ' Serial clock enable pin
-  PIN_RST       = 12 '1  '3         ' Reset pin
-  PIN_DC        = 13 '2  '4         ' Data / Command selection pin
-  PIN_SDA       = 10 '3  '5         ' Serial Data pin
-  PIN_CLK       = 9 '4  '6         ' Serial Clock pin
-  PIN_LED       = 14 '5  '7         ' LED backlight enable pin
+  PIN_3V3B       = 0 '   '0         ' 3v3 pwr supplied by prop pin
+  PIN_GNDB       = 1 '   '1         ' GND pwr supplied by prop pin
+  PIN_CEB        = 11 '0  '2         ' Serial clock enable pin
+  PIN_RSTB       = 12 '1  '3         ' Reset pin
+  PIN_DCB        = 13 '2  '4         ' Data / Command selection pin
+  PIN_SDAB       = 10 '3  '5         ' Serial Data pin
+  PIN_CLKB       = 9 '4  '6         ' Serial Clock pin
+  PIN_LEDB       = 14 '5  '7         ' LED backlight enable pin
 
 ' ILI9163C registers...
   LCD_NOP               = $00
@@ -1816,13 +1816,13 @@ font          byte      %00000000               ' ........    $00
 ''| PASM Constants & Variables                          |
 ''+-----------------------------------------------------+
 
-outmask         long    1<<PIN_3V3 | 0<<PIN_GND | 1<<PIN_CE | 1<<PIN_RST | 0<<PIN_DC | 0<<PIN_SDA | 1<<PIN_CLK | 1<<PIN_LED
-dirmask         long    1<<PIN_3V3 | 1<<PIN_GND | 1<<PIN_CE | 1<<PIN_RST | 1<<PIN_DC | 1<<PIN_SDA | 1<<PIN_CLK | 1<<PIN_LED
-csmask          long    1<<PIN_CE
-rstmask         long    1<<PIN_RST
-dcmask          long    1<<PIN_DC
-sdamask         long    1<<PIN_SDA
-clkmask         long    1<<PIN_CLK
+outmask         long    1<<PIN_3V3B | 0<<PIN_GNDB | 1<<PIN_CEB | 1<<PIN_RSTB | 0<<PIN_DCB | 0<<PIN_SDAB | 1<<PIN_CLKB | 1<<PIN_LEDB
+dirmask         long    1<<PIN_3V3B | 1<<PIN_GNDB | 1<<PIN_CEB | 1<<PIN_RSTB | 1<<PIN_DCB | 1<<PIN_SDAB | 1<<PIN_CLKB | 1<<PIN_LEDB
+csmask          long    1<<PIN_CEB
+rstmask         long    1<<PIN_RSTB
+dcmask          long    1<<PIN_DCB
+sdamask         long    1<<PIN_SDAB
+clkmask         long    1<<PIN_CLKB
 
 delay50ms       long    104_000_000 / 1000 * 50         ' 50ms at 96MHz (will be a bit longer if <104MHz)
 zero            long    0

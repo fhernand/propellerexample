@@ -49,14 +49,14 @@ CON
 '  _CLKMODE      = xtal1 + pll8x     '/
 
 ' LCD Connector J2
-  PIN_3V3B       = 0 '   '0         ' 3v3 pwr supplied by prop pin
-  PIN_GNDB       = 1 '   '1         ' GND pwr supplied by prop pin
-  PIN_CEB        = 11 '0  '2         ' Serial clock enable pin
-  PIN_RSTB       = 12 '1  '3         ' Reset pin
-  PIN_DCB        = 13 '2  '4         ' Data / Command selection pin
-  PIN_SDAB       = 10 '3  '5         ' Serial Data pin
-  PIN_CLKB       = 9 '4  '6         ' Serial Clock pin
-  PIN_LEDB       = 14 '5  '7         ' LED backlight enable pin
+  PIN_3V3       = 0 '   '0         ' 3v3 pwr supplied by prop pin
+  PIN_GND       = 1 '   '1         ' GND pwr supplied by prop pin
+  PIN_CE       = 11 '0  '2         ' Serial clock enable pin
+  PIN_RST       = 12 '1  '3         ' Reset pin
+  PIN_DC       = 13 '2  '4         ' Data / Command selection pin
+  PIN_SDA       = 10 '3  '5         ' Serial Data pin
+  PIN_CLK       = 9 '4  '6         ' Serial Clock pin
+  PIN_LED       = 14 '5  '7         ' LED backlight enable pin
 
 ' ILI9163C registers...
   LCD_NOP               = $00

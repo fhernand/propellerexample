@@ -411,12 +411,12 @@ Row & Cols default correctly 128*128
 
 PRI lcdSetup
   'start pasm cog and wait till running
-  mailbox := $0FFF                                      ' non-zero
+  mailbox := $00FF                                      ' non-zero
   cog := cognew(@entry, @mailbox) ' +1                    ' start LCD Driver Cog
   repeat while mailbox <> 0                             ' wait until cog running
 
 PRI lcdReset
-  mailbox := $FF_00_0000                                ' hw reset LCD
+  mailbox := $FF_FF_0000                                ' hw reset LCD
   repeat while mailbox <> 0
   
 PRI lcdWriteData16(val)
@@ -424,7 +424,7 @@ PRI lcdWriteData16(val)
   lcdWriteData(val & $FF)
 
 PRI lcdWriteData(val)
-  mailbox := $100 | val                                 ' dc=data=1
+  mailbox := $200 | val                                 ' dc=data=1
   repeat while mailbox <> 0
 
 PRI lcdWriteCmd(val)
@@ -437,14 +437,14 @@ PRI setWindow(xs, ys, xe, ye)
   right  := xe
   bottom := ye
   mailbox1 := (xs<<24) | (ys<<16) | (xe<<8) | ye        ' xs, ys, xe, ye 
-  mailbox := $81_00_0000
+  mailbox := $81_FF_0000
   repeat while mailbox <> 0
 
 PRI fillWindow(rgb) | n
 ' Fill Window/Rectangle - calc pixels & write
   n := (right - left +1)*(bottom - top +1)              ' calc no. of pixels
   mailbox1 := (rgb << 16) | n
-  mailbox := $82_00_0000
+  mailbox := $82_FF_0000
   repeat while mailbox <> 0
 
 PRI drawChar(char) 
@@ -452,7 +452,7 @@ PRI drawChar(char)
   setWindow(col, row, col+7, row+7)                     ' set 8*8 font pixel window
 
   mailbox3 := (fgcolor << 16) | bgcolor
-  mailbox  := $83_00_0000 | (char & $7F)
+  mailbox  := $83_FF_0000 | (char & $7F)
   repeat while mailbox <> 0
 
   col += 8
